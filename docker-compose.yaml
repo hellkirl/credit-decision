@@ -26,6 +26,18 @@ services:
       - "5000"
     networks:
       - service-network
+    environment:
+      HTTP_ADDR: ":5000"
+      DATABASE_URL: postgres://${POSTGRES_USER:-credit}:${POSTGRES_PASSWORD:-credit}@db:5432/${POSTGRES_DB:-credit}?sslmode=disable
+      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET (at least 32 characters) in .env}
+      JWT_TTL: ${JWT_TTL:-8h}
+      ML_URL: http://ml:5001
+      RUB_PER_DM: ${RUB_PER_DM:-49.1}
+      APPROVE_THRESHOLD: ${APPROVE_THRESHOLD:-0.25}
+      SEED_USER_LOGIN: ${SEED_USER_LOGIN:-}
+      SEED_USER_PASSWORD: ${SEED_USER_PASSWORD:-}
+      SEED_USER_FULL_NAME: ${SEED_USER_FULL_NAME:-Иванов Иван Александрович}
+      SEED_USER_POSITION: ${SEED_USER_POSITION:-Кредитный специалист}
     depends_on:
       db:
         condition: service_healthy
@@ -80,10 +92,14 @@ services:
       - "5432"
     networks:
       - service-network
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-credit}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-credit}
+      POSTGRES_DB: ${POSTGRES_DB:-credit}
     volumes:
       - db-data:/var/lib/postgresql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${{POSTGRES_USER}} -d ${{POSTGRES_DB}} || exit 1"]
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB} || exit 1"]
       interval: 5s
       timeout: 5s
       retries: 5

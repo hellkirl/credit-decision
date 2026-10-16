@@ -1,0 +1,560 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "South German Credit Scoring API",
+    "description": "Logistic regression credit-risk scorer trained on the South German Credit dataset. OpenAPI/Swagger UI is available at `/docs`.",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "tags": [
+          "ops"
+        ],
+        "summary": "Health",
+        "operationId": "get_health",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/metrics": {
+      "get": {
+        "tags": [
+          "ops"
+        ],
+        "summary": "Metrics",
+        "operationId": "get_metrics",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MetricsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/predict": {
+      "post": {
+        "tags": [
+          "scoring"
+        ],
+        "summary": "Score one credit application",
+        "operationId": "predict",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreditApplication"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PredictionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/predict/batch": {
+      "post": {
+        "tags": [
+          "scoring"
+        ],
+        "summary": "Score multiple credit applications",
+        "operationId": "predict_batch",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BatchPredictionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchPredictionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "BatchPredictionRequest": {
+        "properties": {
+          "applications": {
+            "items": {
+              "$ref": "#/components/schemas/CreditApplication"
+            },
+            "type": "array",
+            "maxItems": 100,
+            "minItems": 1,
+            "title": "Applications",
+            "description": "Up to 100 applications per request"
+          }
+        },
+        "type": "object",
+        "required": [
+          "applications"
+        ],
+        "title": "BatchPredictionRequest"
+      },
+      "BatchPredictionResponse": {
+        "properties": {
+          "predictions": {
+            "items": {
+              "$ref": "#/components/schemas/PredictionResponse"
+            },
+            "type": "array",
+            "title": "Predictions"
+          }
+        },
+        "type": "object",
+        "required": [
+          "predictions"
+        ],
+        "title": "BatchPredictionResponse"
+      },
+      "CreditApplication": {
+        "properties": {
+          "status": {
+            "type": "integer",
+            "maximum": 4.0,
+            "minimum": 1.0,
+            "title": "Status",
+            "description": "Checking account status (1=none … 4=≥200 DM / salary)",
+            "example": 1
+          },
+          "duration": {
+            "type": "integer",
+            "title": "Duration",
+            "description": "Credit duration in months",
+            "minimum": 0.0,
+            "exclusiveMinimum": true,
+            "example": 18
+          },
+          "credit_history": {
+            "type": "integer",
+            "maximum": 4.0,
+            "minimum": 0.0,
+            "title": "Credit History",
+            "description": "Credit history code (0=delay … 4=all paid at this bank)",
+            "example": 4
+          },
+          "purpose": {
+            "type": "integer",
+            "maximum": 10.0,
+            "minimum": 0.0,
+            "title": "Purpose",
+            "description": "Loan purpose (0=others … 10=business)",
+            "example": 2
+          },
+          "amount": {
+            "type": "integer",
+            "title": "Amount",
+            "description": "Credit amount in DM",
+            "minimum": 0.0,
+            "exclusiveMinimum": true,
+            "example": 1049
+          },
+          "savings": {
+            "type": "integer",
+            "maximum": 5.0,
+            "minimum": 1.0,
+            "title": "Savings",
+            "description": "Savings account (1=unknown/none … 5=≥1000 DM)",
+            "example": 1
+          },
+          "employment_duration": {
+            "type": "integer",
+            "maximum": 5.0,
+            "minimum": 1.0,
+            "title": "Employment Duration",
+            "description": "Employment duration (1=unemployed … 5=≥7 yrs)",
+            "example": 2
+          },
+          "installment_rate": {
+            "type": "integer",
+            "maximum": 4.0,
+            "minimum": 1.0,
+            "title": "Installment Rate",
+            "description": "Installment rate as % of disposable income (1=≥35 … 4=<20)",
+            "example": 4
+          },
+          "personal_status_sex": {
+            "type": "integer",
+            "maximum": 4.0,
+            "minimum": 1.0,
+            "title": "Personal Status Sex",
+            "description": "Personal status / sex",
+            "example": 2
+          },
+          "other_debtors": {
+            "type": "integer",
+            "maximum": 3.0,
+            "minimum": 1.0,
+            "title": "Other Debtors",
+            "description": "Other debtors / guarantors (1=none, 2=co-applicant, 3=guarantor)",
+            "example": 1
+          },
+          "present_residence": {
+            "type": "integer",
+            "maximum": 4.0,
+            "minimum": 1.0,
+            "title": "Present Residence",
+            "description": "Years at present residence (1=<1 … 4=≥7)",
+            "example": 4
+          },
+          "property": {
+            "type": "integer",
+            "maximum": 4.0,
+            "minimum": 1.0,
+            "title": "Property",
+            "description": "Most valuable property (1=none … 4=real estate)",
+            "example": 2
+          },
+          "age": {
+            "type": "integer",
+            "maximum": 100.0,
+            "minimum": 18.0,
+            "title": "Age",
+            "description": "Age in years",
+            "example": 21
+          },
+          "other_installment_plans": {
+            "type": "integer",
+            "maximum": 3.0,
+            "minimum": 1.0,
+            "title": "Other Installment Plans",
+            "description": "Other installment plans (1=bank, 2=stores, 3=none)",
+            "example": 3
+          },
+          "housing": {
+            "type": "integer",
+            "maximum": 3.0,
+            "minimum": 1.0,
+            "title": "Housing",
+            "description": "Housing (1=for free, 2=rent, 3=own)",
+            "example": 1
+          },
+          "number_credits": {
+            "type": "integer",
+            "maximum": 4.0,
+            "minimum": 1.0,
+            "title": "Number Credits",
+            "description": "Number of existing credits (1=1 … 4=≥6)",
+            "example": 1
+          },
+          "job": {
+            "type": "integer",
+            "maximum": 4.0,
+            "minimum": 1.0,
+            "title": "Job",
+            "description": "Job / skill level (1=unskilled non-resident … 4=manager)",
+            "example": 3
+          },
+          "people_liable": {
+            "type": "integer",
+            "maximum": 2.0,
+            "minimum": 1.0,
+            "title": "People Liable",
+            "description": "People liable to provide maintenance (1=3 or more, 2=0 to 2)",
+            "example": 2
+          },
+          "telephone": {
+            "type": "integer",
+            "maximum": 2.0,
+            "minimum": 1.0,
+            "title": "Telephone",
+            "description": "Telephone (1=no, 2=yes under customer name)",
+            "example": 1
+          },
+          "foreign_worker": {
+            "type": "integer",
+            "maximum": 2.0,
+            "minimum": 1.0,
+            "title": "Foreign Worker",
+            "description": "Foreign worker (1=yes, 2=no)",
+            "example": 2
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "duration",
+          "credit_history",
+          "purpose",
+          "amount",
+          "savings",
+          "employment_duration",
+          "installment_rate",
+          "personal_status_sex",
+          "other_debtors",
+          "present_residence",
+          "property",
+          "age",
+          "other_installment_plans",
+          "housing",
+          "number_credits",
+          "job",
+          "people_liable",
+          "telephone",
+          "foreign_worker"
+        ],
+        "title": "CreditApplication",
+        "example": {
+          "age": 21,
+          "amount": 1049,
+          "credit_history": 4,
+          "duration": 18,
+          "employment_duration": 2,
+          "foreign_worker": 2,
+          "housing": 1,
+          "installment_rate": 4,
+          "job": 3,
+          "number_credits": 1,
+          "other_debtors": 1,
+          "other_installment_plans": 3,
+          "people_liable": 2,
+          "personal_status_sex": 2,
+          "present_residence": 4,
+          "property": 2,
+          "purpose": 2,
+          "savings": 1,
+          "status": 1,
+          "telephone": 1
+        }
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "HealthResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "enum": [
+              "ok"
+            ]
+          },
+          "model_loaded": {
+            "type": "boolean",
+            "title": "Model Loaded"
+          },
+          "threshold": {
+            "type": "number",
+            "title": "Threshold",
+            "format": "double"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "model_loaded",
+          "threshold"
+        ],
+        "title": "HealthResponse"
+      },
+      "MetricsResponse": {
+        "properties": {
+          "threshold": {
+            "type": "number",
+            "title": "Threshold",
+            "format": "double"
+          },
+          "accuracy": {
+            "title": "Accuracy",
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "precision": {
+            "title": "Precision",
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "recall": {
+            "title": "Recall",
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "f1": {
+            "title": "F1",
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "roc_auc": {
+            "title": "Roc Auc",
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "threshold"
+        ],
+        "title": "MetricsResponse"
+      },
+      "PredictionResponse": {
+        "properties": {
+          "credit_risk": {
+            "type": "string",
+            "enum": [
+              "bad",
+              "good"
+            ],
+            "title": "Credit Risk",
+            "description": "Predicted class: bad=0, good=1"
+          },
+          "credit_risk_code": {
+            "type": "integer",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Credit Risk Code",
+            "description": "0=bad, 1=good"
+          },
+          "probability_good": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Probability Good",
+            "description": "Estimated P(credit_risk = good)",
+            "format": "double"
+          },
+          "probability_bad": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Probability Bad",
+            "description": "Estimated P(credit_risk = bad)",
+            "format": "double"
+          },
+          "threshold": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Threshold",
+            "description": "Decision threshold applied to probability_good",
+            "format": "double"
+          }
+        },
+        "type": "object",
+        "required": [
+          "credit_risk",
+          "credit_risk_code",
+          "probability_good",
+          "probability_bad",
+          "threshold"
+        ],
+        "title": "PredictionResponse"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}

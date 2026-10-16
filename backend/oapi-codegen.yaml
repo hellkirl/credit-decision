@@ -1,0 +1,6 @@
+package: genhttp
+output: backend/pkg/generated/http/server.gen.go
+generate:
+  models: true
+  strict-server: true
+  gin-server: true

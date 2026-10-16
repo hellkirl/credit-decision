@@ -83,6 +83,7 @@ export default function Login() {
               id="login"
               name="login"
               type="text"
+              required
               autoComplete="username"
               placeholder="ivan.ivanov"
               className="h-[51px] w-full rounded-md border border-[#B2B2B2] bg-white px-[17px] text-base sm:text-sm text-black outline-none placeholder:text-[#B2B2B2] focus:border-[#277AFF]"
@@ -100,6 +101,7 @@ export default function Login() {
               id="password"
               name="password"
               type="password"
+              required
               autoComplete="current-password"
               placeholder="**********"
               className="h-[51px] w-full rounded-md border border-[#B2B2B2] bg-white px-[17px] text-base sm:text-sm text-black outline-none placeholder:text-[#B2B2B2] focus:border-[#277AFF]"

@@ -1,0 +1,6 @@
+.git
+*.md
+Dockerfile
+.dockerignore
+*_test.go
+oapi*.yaml

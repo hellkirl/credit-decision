@@ -7,7 +7,7 @@
     "dev": "react-router dev",
     "start": "react-router-serve ./build/server/index.js",
     "typecheck": "react-router typegen && tsc",
-    "api:types": "openapi-typescript ../backend/openapi.yaml -o app/lib/schema.d.ts"
+    "api:types": "openapi-typescript ../backend/api/openapi/openapi.yaml -o app/lib/schema.d.ts"
   },
   "dependencies": {
     "@react-router/node": "^8.4.0",

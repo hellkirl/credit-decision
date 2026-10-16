@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { Link, useFetcher } from "react-router";
+import { Link, redirect, useFetcher } from "react-router";
 
 import { AppHeader } from "~/components/app-header";
 import {
@@ -51,6 +51,16 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
 
 export async function clientAction({ params, request }: Route.ClientActionArgs) {
   const form = await request.formData();
+  if (form.get("intent") === "delete") {
+    try {
+      await api(`/applications/${params.id}`, { method: "DELETE" });
+      return redirect("/applications");
+    } catch (error) {
+      if (error instanceof Response) throw error;
+      return { ok: false, error: "Не удалось удалить черновик" };
+    }
+  }
+
   const body: DecisionInput = {
     decision: form.get("decision") as Decision,
     reason: String(form.get("reason") ?? ""),
@@ -149,6 +159,7 @@ function ApplicationView({ a }: { a: Application }) {
           <Summary label="Срок кредита">{months(a.term_months)}</Summary>
           <Summary label="Цель кредита">{label(purposeLabels, a.purpose)}</Summary>
         </div>
+        <ApplicationActions a={a} />
       </section>
 
       {a.status === "draft" || !a.risk || !a.recommendation ? (
@@ -223,6 +234,50 @@ function ApplicationView({ a }: { a: Application }) {
         />
       )}
     </main>
+  );
+}
+
+function ApplicationActions({ a }: { a: Application }) {
+  const fetcher = useFetcher<typeof clientAction>();
+  const [confirming, setConfirming] = useState(false);
+  const deleting = fetcher.state !== "idle";
+  const isDraft = a.status === "draft";
+
+  if (a.status === "completed") return null;
+
+  return (
+    <div className="mt-5 flex flex-wrap items-center justify-end gap-3">
+      {fetcher.state === "idle" && fetcher.data?.error && (
+        <span className="text-[13px] text-[#E20D0D]">{fetcher.data.error}</span>
+      )}
+      {isDraft && (
+        <button
+          type="button"
+          onClick={() => setConfirming(true)}
+          disabled={deleting}
+          className="h-[34px] rounded-[5px] border border-[#EBABAB] bg-white px-3.5 text-[13px] font-bold text-[#E20D0D] hover:bg-[#FFF5F5] disabled:opacity-50"
+        >
+          Удалить черновик
+        </button>
+      )}
+      <Link
+        to={`/applications/${a.id}/edit`}
+        className="flex h-[34px] items-center rounded-[5px] border border-black/10 bg-white px-3.5 text-[13px] font-bold hover:bg-[#FBFBFB]"
+      >
+        {isDraft ? "Редактировать черновик" : "Редактировать"}
+      </Link>
+
+      {confirming && (
+        <ConfirmDialog
+          title="Удалить черновик?"
+          text={`Черновик заявки #${a.id} будет удалён без возможности восстановления`}
+          confirmLabel="Удалить"
+          busy={deleting}
+          onCancel={() => setConfirming(false)}
+          onConfirm={() => fetcher.submit({ intent: "delete" }, { method: "post" })}
+        />
+      )}
+    </div>
   );
 }
 
@@ -351,12 +406,16 @@ function DecisionForm({ a, summary }: { a: Application; summary: string }) {
 }
 
 function ConfirmDialog({
+  title = "Подтвердить решение?",
   text,
+  confirmLabel = "Подтвердить",
   busy,
   onCancel,
   onConfirm,
 }: {
+  title?: string;
   text: string;
+  confirmLabel?: string;
   busy: boolean;
   onCancel: () => void;
   onConfirm: () => void;
@@ -380,7 +439,7 @@ function ConfirmDialog({
         onClick={(e) => e.stopPropagation()}
       >
         <h3 id="confirm-title" className="text-xl font-bold">
-          Подтвердить решение?
+          {title}
         </h3>
         <p className="mt-4 text-[13px] text-[#4A4A4A]">{text}</p>
         <div className="mt-6 flex justify-end gap-3">
@@ -398,7 +457,7 @@ function ConfirmDialog({
             autoFocus
             className="h-[42px] rounded-md bg-[#277AFF] px-[18px] text-[15px] font-bold text-white hover:bg-[#1f68db] disabled:opacity-50"
           >
-            Подтвердить
+            {confirmLabel}
           </button>
         </div>
       </div>

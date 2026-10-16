@@ -1,0 +1,770 @@
+openapi: 3.0.4
+info:
+  title: API кредитных решений
+  version: 0.1.0
+  description: |
+    Бэкенд сервиса кредитных решений для кредитных специалистов банка.
+
+    Аутентификация — по bearer-токену. `POST /auth/login` возвращает
+    `access_token`; его нужно передавать в каждом последующем запросе как
+    `Authorization: Bearer <token>`. Все эндпоинты, кроме `/health` и
+    `/auth/login`, возвращают `401`, если заголовок отсутствует, токен
+    недействителен или истёк; в этом случае фронтенд удаляет токен и
+    перенаправляет пользователя на страницу входа.
+servers:
+  - url: /api
+    description: Через nginx (так обращается фронтенд)
+  - url: http://localhost:5000
+    description: Напрямую к контейнеру бэкенда
+
+tags:
+  - name: system
+    description: Состояние сервиса
+  - name: auth
+    description: Вход специалиста
+  - name: applications
+    description: Кредитные заявки, результаты скоринга и решения специалистов
+
+security:
+  - bearerAuth: []
+
+paths:
+  /health:
+    get:
+      tags: [system]
+      summary: Проверка работоспособности для docker-compose
+      operationId: health
+      security: []
+      responses:
+        "200":
+          description: Сервис работает
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+
+  /auth/login:
+    post:
+      tags: [auth]
+      summary: Вход по корпоративным учётным данным
+      operationId: login
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: Вход выполнен
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TokenResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          description: Неверный логин или пароль
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /auth/me:
+    get:
+      tags: [auth]
+      summary: Текущий специалист (отображается в шапке страницы)
+      operationId: getCurrentUser
+      responses:
+        "200":
+          description: Текущий пользователь
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /applications:
+    get:
+      tags: [applications]
+      summary: Список заявок (с фильтрами и пагинацией, сначала новые)
+      operationId: listApplications
+      parameters:
+        - name: search
+          in: query
+          description: Совпадение по ID заявки (точное, без `#`) или по подстроке ФИО заёмщика без учёта регистра
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            $ref: "#/components/schemas/Status"
+        - name: risk
+          in: query
+          schema:
+            $ref: "#/components/schemas/Risk"
+        - name: recommendation
+          in: query
+          schema:
+            $ref: "#/components/schemas/Recommendation"
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: page_size
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 12
+      responses:
+        "200":
+          description: Одна страница заявок
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationsPage"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    post:
+      tags: [applications]
+      summary: Создать заявку (или сохранить её как черновик)
+      description: |
+        При `draft: false` все поля обязательны и проходят валидацию, а заявка
+        оценивается ML-сервисом: сохранённая заявка получает `risk`,
+        `recommendation`, `default_probability` и `status`. Ответ содержит
+        только `id`; полные данные доступны через `GET /applications/{id}`.
+
+        При `draft: true` любое поле, кроме `draft`, может быть `null`; заявка
+        сохраняется со статусом `draft` и не оценивается.
+      operationId: createApplication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ApplicationInput"
+      responses:
+        "201":
+          description: Создано
+          headers:
+            Location:
+              description: Путь к созданной заявке
+              schema:
+                type: string
+                example: /applications/10246
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreatedResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /applications/stats:
+    get:
+      tags: [applications]
+      summary: Счётчики для карточек на дашборде
+      operationId: getApplicationsStats
+      responses:
+        "200":
+          description: Количество заявок за текущий период
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationsStats"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /applications/{id}:
+    parameters:
+      - $ref: "#/components/parameters/ApplicationId"
+    get:
+      tags: [applications]
+      summary: Получить заявку с деталями скоринга
+      operationId: getApplication
+      responses:
+        "200":
+          description: Заявка
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationDetail"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    put:
+      tags: [applications]
+      summary: Редактировать заявку или черновик
+      description: |
+        Полностью заменяет данные заявки.
+
+        Черновик можно сохранить снова как черновик (`draft: true`) или
+        отправить на оценку (`draft: false`): тогда все поля проходят
+        валидацию, заявка оценивается ML-сервисом и получает новый статус.
+
+        Отправленную заявку можно редактировать только с `draft: false`;
+        она оценивается заново, а статус пересчитывается. Завершённые заявки
+        (с принятым решением) редактировать нельзя.
+      operationId: updateApplication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ApplicationInput"
+      responses:
+        "204":
+          description: Заявка сохранена
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          description: Заявка завершена или отправленную заявку пытаются вернуть в черновик
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    delete:
+      tags: [applications]
+      summary: Удалить черновик
+      operationId: deleteApplication
+      responses:
+        "204":
+          description: Черновик удалён
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          description: Удалять можно только черновики
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /applications/{id}/decision:
+    parameters:
+      - $ref: "#/components/parameters/ApplicationId"
+    post:
+      tags: [applications]
+      summary: Сохранить решение специалиста
+      description: |
+        Записывает решение и переводит заявку в статус `completed`.
+        Повторная отправка заменяет предыдущее решение.
+      operationId: saveDecision
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DecisionInput"
+      responses:
+        "204":
+          description: Решение сохранено
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          description: Заявка является черновиком, по ней нельзя принять решение
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    ApplicationId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+        minimum: 1
+        example: 10245
+
+  responses:
+    BadRequest:
+      description: Некорректный запрос или ошибка валидации
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    Unauthorized:
+      description: Bearer-токен отсутствует, недействителен или истёк
+      headers:
+        WWW-Authenticate:
+          schema:
+            type: string
+            example: Bearer error="invalid_token"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    NotFound:
+      description: Заявка не найдена
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+
+  schemas:
+    HealthResponse:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [ok]
+
+    CreatedResponse:
+      type: object
+      required: [id]
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 10246
+
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+          description: Сообщение для человека
+          example: validation failed
+        fields:
+          type: object
+          description: Сообщения валидации по полям (только при `400`)
+          additionalProperties:
+            type: string
+          example:
+            age: must be between 18 and 100
+
+    LoginRequest:
+      type: object
+      required: [login, password]
+      properties:
+        login:
+          type: string
+          minLength: 1
+          example: ivan.ivanov
+        password:
+          type: string
+          format: password
+          minLength: 1
+
+    User:
+      type: object
+      required: [id, full_name, position]
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 7
+        full_name:
+          type: string
+          example: Иванов Иван Александрович
+        position:
+          type: string
+          description: Должность, как она отображается в шапке
+          example: Кредитный специалист
+
+    TokenResponse:
+      type: object
+      required: [access_token, token_type, expires_in]
+      properties:
+        access_token:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        token_type:
+          type: string
+          enum: [Bearer]
+        expires_in:
+          type: integer
+          description: Время жизни токена в секундах
+          example: 28800
+
+    Risk:
+      type: string
+      enum: [low, medium, high]
+      description: "low = Низкий, medium = Средний, high = Высокий"
+    Recommendation:
+      type: string
+      enum: [approve, review, reject]
+      description: "approve = Одобрить, review = Проверить дополнительно, reject = Отклонить"
+    Status:
+      type: string
+      enum: [draft, new, manual_review, pending_confirmation, completed]
+      description: "draft = Черновик, new = Новая, manual_review = На ручной проверке, pending_confirmation = На подтверждении, completed = Завершена"
+    Decision:
+      type: string
+      enum: [approve, reject]
+      description: "approve = Одобрить, reject = Отклонить"
+    MaritalStatus:
+      type: string
+      enum: [single, married, divorced, widowed]
+    Housing:
+      type: string
+      enum: [own, rent, free]
+    Property:
+      type: string
+      enum: [real_estate, savings_insurance, car, none]
+    Job:
+      type: string
+      enum: [unemployed, unskilled, skilled, management]
+    Purpose:
+      type: string
+      enum: [new_car, used_car, furniture, electronics, repairs, education, retraining, business, other]
+    CreditHistory:
+      type: string
+      enum: [no_credits, all_paid, existing_paid, delayed, critical]
+    CheckingStatus:
+      type: string
+      enum: [none, lt_0, "0_200", ge_200]
+      description: "Остаток на текущем счёте: none = нет счёта, lt_0 = < 0 DM, 0_200 = 0–200 DM, ge_200 = ≥ 200 DM"
+    Savings:
+      type: string
+      enum: [unknown, lt_100, "100_500", "500_1000", ge_1000]
+
+    ApplicationSummary:
+      type: object
+      required: [id, borrower, amount, risk, recommendation, status, created_at]
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 10245
+        borrower:
+          type: string
+          nullable: true
+          description: ФИО заёмщика; `null` только у черновиков
+          example: Петров Иван Иванович
+        amount:
+          type: integer
+          format: int64
+          nullable: true
+          description: Сумма кредита в рублях; `null` только у черновиков
+          example: 450000
+        risk:
+          description: "`null` у черновиков"
+          type: string
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/Risk"
+        recommendation:
+          description: "`null` у черновиков"
+          type: string
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/Recommendation"
+        status:
+          $ref: "#/components/schemas/Status"
+        created_at:
+          type: string
+          format: date-time
+          example: "2026-10-15T10:24:00Z"
+
+    ApplicationsPage:
+      type: object
+      required: [items, total, page, page_size]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ApplicationSummary"
+        total:
+          type: integer
+          description: Количество заявок, подходящих под фильтры (на всех страницах)
+          example: 248
+        page:
+          type: integer
+          example: 1
+        page_size:
+          type: integer
+          example: 12
+
+    ApplicationsStats:
+      type: object
+      required: [total, new, manual_review, approved, rejected]
+      properties:
+        total:
+          type: integer
+          example: 248
+        new:
+          type: integer
+          example: 32
+        manual_review:
+          type: integer
+          example: 14
+        approved:
+          type: integer
+          example: 176
+        rejected:
+          type: integer
+          example: 26
+
+    ApplicantData:
+      type: object
+      description: |
+        Данные заявителя и кредита, введённые специалистом. Все поля допускают
+        `null`, поскольку черновики могут быть неполными; для заявок, не
+        являющихся черновиками, бэкенд отклоняет `null` с ошибкой `400`, так что
+        все поля заполнены.
+      required:
+        - borrower
+        - dependents
+        - housing
+        - age
+        - phone
+        - residence_years
+        - marital_status
+        - foreign_worker
+        - property
+        - job
+        - employment_months
+        - amount
+        - term_months
+        - purpose
+        - installment_rate
+        - checking_status
+        - other_installment_plans
+        - savings
+        - other_debtors
+        - credit_history
+        - existing_credits
+      properties:
+        borrower:
+          type: string
+          nullable: true
+          minLength: 1
+          description: ФИО заёмщика
+          example: Петров Иван Иванович
+        dependents:
+          type: integer
+          nullable: true
+          minimum: 0
+          description: Количество иждивенцев
+          example: 1
+        housing:
+          description: Тип жилья
+          type: string
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/Housing"
+        age:
+          type: integer
+          nullable: true
+          minimum: 18
+          maximum: 100
+          description: Возраст, лет
+          example: 32
+        phone:
+          type: boolean
+          nullable: true
+          description: Есть зарегистрированный телефон
+        residence_years:
+          type: integer
+          nullable: true
+          minimum: 0
+          description: Лет проживания по текущему адресу
+          example: 5
+        marital_status:
+          description: Семейное положение
+          type: string
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/MaritalStatus"
+        foreign_worker:
+          type: boolean
+          nullable: true
+          description: Иностранный работник
+        property:
+          description: Самое ценное имущество
+          type: string
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/Property"
+        job:
+          description: Квалификация / тип занятости
+          type: string
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/Job"
+        employment_months:
+          type: integer
+          nullable: true
+          minimum: 0
+          description: Стаж на текущем месте работы, месяцев
+          example: 8
+        amount:
+          type: integer
+          format: int64
+          nullable: true
+          minimum: 1
+          description: Сумма кредита в рублях
+          example: 450000
+        term_months:
+          type: integer
+          nullable: true
+          minimum: 1
+          description: Срок кредита, месяцев
+          example: 36
+        purpose:
+          description: Цель кредита
+          type: string
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/Purpose"
+        installment_rate:
+          type: number
+          format: double
+          nullable: true
+          minimum: 0
+          maximum: 100
+          description: Ежемесячный платёж в процентах от располагаемого дохода
+          example: 17.9
+        checking_status:
+          description: Остаток на текущем счёте
+          type: string
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/CheckingStatus"
+        other_installment_plans:
+          type: boolean
+          nullable: true
+          description: Есть другие планы рассрочки
+        savings:
+          description: Сбережения
+          type: string
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/Savings"
+        other_debtors:
+          type: boolean
+          nullable: true
+          description: Есть созаёмщики или поручители
+        credit_history:
+          description: Кредитная история
+          type: string
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/CreditHistory"
+        existing_credits:
+          type: integer
+          nullable: true
+          minimum: 0
+          description: Количество действующих кредитов
+          example: 2
+
+    ApplicationInput:
+      description: |
+        Тело запроса на создание заявки. Передаются все поля; при `draft: true`
+        любое поле, кроме `draft`, может быть `null`.
+      allOf:
+        - $ref: "#/components/schemas/ApplicantData"
+        - type: object
+          required: [draft]
+          properties:
+            draft:
+              type: boolean
+
+    ApplicationDetail:
+      allOf:
+        - $ref: "#/components/schemas/ApplicationSummary"
+        - $ref: "#/components/schemas/ApplicantData"
+        - type: object
+          required:
+            - client_id
+            - default_probability
+            - thresholds
+            - triggered_rules
+            - decision
+          properties:
+            client_id:
+              type: string
+              example: "448-22-19"
+            default_probability:
+              type: number
+              format: double
+              nullable: true
+              minimum: 0
+              maximum: 1
+              description: Вероятность дефолта по ML-модели; `null` у черновиков
+              example: 0.187
+            thresholds:
+              description: "`null` у черновиков"
+              type: object
+              nullable: true
+              allOf:
+                - $ref: "#/components/schemas/Thresholds"
+            triggered_rules:
+              type: array
+              description: Бизнес-правила, которые определили рекомендацию или повлияли на неё
+              items:
+                type: string
+              example:
+                - Стаж работы менее 1 года - обязательная ручная проверка
+            decision:
+              description: Сохранённое решение специалиста или `null`, если решения ещё нет
+              type: object
+              nullable: true
+              allOf:
+                - $ref: "#/components/schemas/DecisionInput"
+
+    Thresholds:
+      type: object
+      description: |
+        Пороги вероятности дефолта: ниже `approve` система рекомендует
+        одобрение, выше `reject` — отказ, а в промежутке между ними заявка
+        отправляется на ручную проверку.
+      required: [approve, reject]
+      properties:
+        approve:
+          type: number
+          format: double
+          minimum: 0
+          maximum: 1
+          example: 0.083
+        reject:
+          type: number
+          format: double
+          minimum: 0
+          maximum: 1
+          example: 0.285
+
+    DecisionInput:
+      type: object
+      required: [decision, reason]
+      properties:
+        decision:
+          $ref: "#/components/schemas/Decision"
+        reason:
+          type: string
+          minLength: 1
+          example: Стабильный доход, положительная кредитная история

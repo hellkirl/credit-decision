@@ -14,6 +14,9 @@ type Pages = {
   "/": {
     params: {};
   };
+  "/health": {
+    params: {};
+  };
   "/login": {
     params: {};
   };
@@ -28,6 +31,11 @@ type Pages = {
       "id": string;
     };
   };
+  "/applications/:id/edit": {
+    params: {
+      "id": string;
+    };
+  };
   "/.well-known/appspecific/com.chrome.devtools.json": {
     params: {};
   };
@@ -36,7 +44,11 @@ type Pages = {
 type RouteFiles = {
   "root.tsx": {
     id: "root";
-    page: "/" | "/login" | "/applications" | "/applications/new" | "/applications/:id" | "/.well-known/appspecific/com.chrome.devtools.json";
+    page: "/" | "/health" | "/login" | "/applications" | "/applications/new" | "/applications/:id" | "/applications/:id/edit" | "/.well-known/appspecific/com.chrome.devtools.json";
+  };
+  "routes/health.ts": {
+    id: "routes/health";
+    page: "/health";
   };
   "routes/login.tsx": {
     id: "routes/login";
@@ -44,7 +56,7 @@ type RouteFiles = {
   };
   "routes/protected.tsx": {
     id: "routes/protected";
-    page: "/" | "/applications" | "/applications/new" | "/applications/:id";
+    page: "/" | "/applications" | "/applications/new" | "/applications/:id" | "/applications/:id/edit";
   };
   "routes/home.tsx": {
     id: "routes/home";
@@ -62,6 +74,10 @@ type RouteFiles = {
     id: "routes/application-detail";
     page: "/applications/:id";
   };
+  "routes/edit-application.tsx": {
+    id: "routes/edit-application";
+    page: "/applications/:id/edit";
+  };
   "routes/devtools-json.ts": {
     id: "routes/devtools-json";
     page: "/.well-known/appspecific/com.chrome.devtools.json";
@@ -70,11 +86,13 @@ type RouteFiles = {
 
 type RouteModules = {
   "root": typeof import("./app/root.tsx");
+  "routes/health": typeof import("./app/routes/health.ts");
   "routes/login": typeof import("./app/routes/login.tsx");
   "routes/protected": typeof import("./app/routes/protected.tsx");
   "routes/home": typeof import("./app/routes/home.tsx");
   "routes/applications": typeof import("./app/routes/applications.tsx");
   "routes/new-application": typeof import("./app/routes/new-application.tsx");
   "routes/application-detail": typeof import("./app/routes/application-detail.tsx");
+  "routes/edit-application": typeof import("./app/routes/edit-application.tsx");
   "routes/devtools-json": typeof import("./app/routes/devtools-json.ts");
 };
