@@ -13,10 +13,7 @@ class CreditApplication(BaseModel):
         description="Checking account status (1=none … 4=≥200 DM / salary)",
         examples=[1],
     )
-    duration: int = Field(
-        ...,
-        gt=0,
-        description="Credit duration in months",
+    duration: int = Field(..., description="Credit duration in months",
         examples=[18],
     )
     credit_history: int = Field(
@@ -28,15 +25,10 @@ class CreditApplication(BaseModel):
     )
     purpose: int = Field(
         ...,
-        ge=0,
-        le=10,
         description="Loan purpose (0=others … 10=business)",
         examples=[2],
     )
-    amount: int = Field(
-        ...,
-        gt=0,
-        description="Credit amount in DM",
+    amount: int = Field(..., description="Credit amount in DM",
         examples=[1049],
     )
     savings: int = Field(
@@ -62,15 +54,11 @@ class CreditApplication(BaseModel):
     )
     personal_status_sex: int = Field(
         ...,
-        ge=1,
-        le=4,
         description="Personal status / sex",
         examples=[2],
     )
     other_debtors: int = Field(
         ...,
-        ge=1,
-        le=3,
         description="Other debtors / guarantors (1=none, 2=co-applicant, 3=guarantor)",
         examples=[1],
     )
@@ -90,22 +78,16 @@ class CreditApplication(BaseModel):
     )
     age: int = Field(
         ...,
-        ge=18,
-        le=100,
         description="Age in years",
         examples=[21],
     )
     other_installment_plans: int = Field(
         ...,
-        ge=1,
-        le=3,
         description="Other installment plans (1=bank, 2=stores, 3=none)",
         examples=[3],
     )
     housing: int = Field(
         ...,
-        ge=1,
-        le=3,
         description="Housing (1=for free, 2=rent, 3=own)",
         examples=[1],
     )
@@ -125,22 +107,16 @@ class CreditApplication(BaseModel):
     )
     people_liable: int = Field(
         ...,
-        ge=1,
-        le=2,
         description="People liable to provide maintenance (1=3 or more, 2=0 to 2)",
         examples=[2],
     )
     telephone: int = Field(
         ...,
-        ge=1,
-        le=2,
         description="Telephone (1=no, 2=yes under customer name)",
         examples=[1],
     )
     foreign_worker: int = Field(
         ...,
-        ge=1,
-        le=2,
         description="Foreign worker (1=yes, 2=no)",
         examples=[2],
     )
@@ -181,18 +157,15 @@ class PredictionResponse(BaseModel):
         description="Predicted class: bad=0, good=1",
     )
     credit_risk_code: int = Field(..., ge=0, le=1, description="0=bad, 1=good")
-    probability_good: float = Field(
-        ...,
-        ge=0.0,
-        le=1.0,
-        description="Estimated P(credit_risk = good)",
+    probability_good: float | None = Field(
+        ..., ge=0.0, le=1.0, description="Estimated P(credit_risk = good)"
     )
-    probability_bad: float = Field(
-        ...,
-        ge=0.0,
-        le=1.0,
-        description="Estimated P(credit_risk = bad)",
+    probability_bad: float | None = Field(
+        ..., ge=0.0, le=1.0, description="Estimated P(credit_risk = bad)"
     )
+    decision: Literal["approve", "manual_review", "reject"]
+    pd: float | None = Field(default=None, ge=0.0, le=1.0)
+    reasons: list[dict[str, str]] = Field(default_factory=list)
     threshold: float = Field(
         ...,
         ge=0.0,

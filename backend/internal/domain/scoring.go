@@ -54,6 +54,12 @@ func Score(a Applicant, defaultProbability float64, t Thresholds) Scoring {
 			}
 		}
 	}
+
+	if s.Recommendation == RecommendationReject && a.Age != nil && *a.Age <= 25 {
+		s.Recommendation = RecommendationReview
+		s.TriggeredRules = append(s.TriggeredRules,
+			"Возраст заёмщика 25 лет или меньше при базовом отказе - обязательная ручная проверка")
+	}
 	return s
 }
 

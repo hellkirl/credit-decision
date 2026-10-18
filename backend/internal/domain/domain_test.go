@@ -85,7 +85,9 @@ func TestScore(t *testing.T) {
 		{"medium", 0.3, nil, RiskMedium, RecommendationReview, 0},
 		{"high", 0.7, nil, RiskHigh, RecommendationReject, 0},
 		{"short employment forces review", 0.1, func(a *Applicant) { a.EmploymentMonths = ptr(8) }, RiskLow, RecommendationReview, 1},
-		{"rules never soften a reject", 0.7, func(a *Applicant) { a.CreditHistory = ptr(CreditHistoryDelayed) }, RiskHigh, RecommendationReject, 1},
+		{"ordinary rules do not soften a reject", 0.7, func(a *Applicant) { a.CreditHistory = ptr(CreditHistoryDelayed) }, RiskHigh, RecommendationReject, 1},
+		{"age 25 softens reject to review", 0.7, func(a *Applicant) { a.Age = ptr(25) }, RiskHigh, RecommendationReview, 1},
+		{"age 26 does not soften reject", 0.7, func(a *Applicant) { a.Age = ptr(26) }, RiskHigh, RecommendationReject, 0},
 		{"unemployed is one rule, not two", 0.1, func(a *Applicant) {
 			a.Job = ptr(JobUnemployed)
 			a.EmploymentMonths = ptr(0)

@@ -5,6 +5,8 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 RAW_DATA_PATH = PROJECT_ROOT / "data" / "raw" / "SouthGermanCredit.asc"
 PROCESSED_DATA_PATH = PROJECT_ROOT / "data" / "processed" / "south_german_credit.csv"
 MODEL_PATH = PROJECT_ROOT / "models" / "logistic_regression.joblib"
+METADATA_PATH = PROJECT_ROOT / "models" / "training_metadata.json"
+CALIBRATOR_PATH = PROJECT_ROOT / "models" / "platt_calibrator.joblib"
 REPORTS_DIR = PROJECT_ROOT / "reports"
 FIGURES_DIR = REPORTS_DIR / "figures"
 
