@@ -1,0 +1,63 @@
+{
+  "numeric_ranges": {
+    "duration": {
+      "min": 4,
+      "max": 60
+    },
+    "amount": {
+      "min": 250,
+      "max": 15945
+    },
+    "age": {
+      "min": 19,
+      "max": 75
+    }
+  },
+  "categorical_values": {
+    "purpose": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      8,
+      9,
+      10
+    ],
+    "personal_status_sex": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "other_debtors": [
+      1,
+      2,
+      3
+    ],
+    "other_installment_plans": [
+      1,
+      2,
+      3
+    ],
+    "housing": [
+      1,
+      2,
+      3
+    ],
+    "people_liable": [
+      1,
+      2
+    ],
+    "telephone": [
+      1,
+      2
+    ],
+    "foreign_worker": [
+      1,
+      2
+    ]
+  }
+}

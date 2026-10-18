@@ -21,7 +21,8 @@ from credit.schemas import (
     MetricsResponse,
     PredictionResponse,
 )
-DEFAULT_THRESHOLD = 0.5  # Diagnostic fallback only; never used for decisions.
+
+DEFAULT_THRESHOLD = 0.5
 APPROVE_PD_THRESHOLD = 0.083
 REJECT_PD_THRESHOLD = 0.285
 GOOD_PROBABILITY_THRESHOLD = 1.0 - APPROVE_PD_THRESHOLD

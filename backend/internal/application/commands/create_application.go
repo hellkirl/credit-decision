@@ -29,7 +29,6 @@ func (s scoring) score(ctx context.Context, a domain.Applicant) (domain.Scoring,
 	if err != nil {
 		return domain.Scoring{}, fmt.Errorf("score application: %w", err)
 	}
-	// Business decision thresholds are fixed and independent of the Youden metric.
 	thresholds := domain.Thresholds{
 		Approve: 0.083,
 		Reject:  0.285,
