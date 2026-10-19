@@ -11,8 +11,9 @@ import (
 )
 
 type Prediction struct {
-	DefaultProbability float64
-	RejectThreshold    float64
+	DefaultProbability *float64
+	Recommendation     domain.Recommendation
+	TriggeredRules     []string
 }
 
 type Scorer interface {
@@ -33,7 +34,7 @@ func (s scoring) score(ctx context.Context, a domain.Applicant) (domain.Scoring,
 		Approve: 0.083,
 		Reject:  0.285,
 	}
-	return domain.Score(a, p.DefaultProbability, thresholds), nil
+	return domain.ScoreFromML(p.DefaultProbability, p.Recommendation, p.TriggeredRules, thresholds), nil
 }
 
 type CreateApplication struct {

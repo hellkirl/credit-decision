@@ -49,6 +49,27 @@ func (e PredictionResponseCreditRisk) Valid() bool {
 	}
 }
 
+// Defines values for PredictionResponseDecision.
+const (
+	Approve      PredictionResponseDecision = "approve"
+	ManualReview PredictionResponseDecision = "manual_review"
+	Reject       PredictionResponseDecision = "reject"
+)
+
+// Valid indicates whether the value is a known member of the PredictionResponseDecision enum.
+func (e PredictionResponseDecision) Valid() bool {
+	switch e {
+	case Approve:
+		return true
+	case ManualReview:
+		return true
+	case Reject:
+		return true
+	default:
+		return false
+	}
+}
+
 // BatchPredictionRequest defines model for BatchPredictionRequest.
 type BatchPredictionRequest struct {
 	// Applications Up to 100 applications per request
@@ -154,13 +175,16 @@ type PredictionResponse struct {
 	CreditRisk PredictionResponseCreditRisk `json:"credit_risk"`
 
 	// CreditRiskCode 0=bad, 1=good
-	CreditRiskCode int `json:"credit_risk_code"`
+	CreditRiskCode int                        `json:"credit_risk_code"`
+	Decision       PredictionResponseDecision `json:"decision"`
+	Pd             *float64                   `json:"pd,omitempty"`
 
 	// ProbabilityBad Estimated P(credit_risk = bad)
-	ProbabilityBad float64 `json:"probability_bad"`
+	ProbabilityBad *float64 `json:"probability_bad"`
 
 	// ProbabilityGood Estimated P(credit_risk = good)
-	ProbabilityGood float64 `json:"probability_good"`
+	ProbabilityGood *float64             `json:"probability_good"`
+	Reasons         *[]map[string]string `json:"reasons,omitempty"`
 
 	// Threshold Decision threshold applied to probability_good
 	Threshold float64 `json:"threshold"`
@@ -168,6 +192,9 @@ type PredictionResponse struct {
 
 // PredictionResponseCreditRisk Predicted class: bad=0, good=1
 type PredictionResponseCreditRisk string
+
+// PredictionResponseDecision defines model for PredictionResponse.Decision.
+type PredictionResponseDecision string
 
 // ValidationError defines model for ValidationError.
 type ValidationError struct {

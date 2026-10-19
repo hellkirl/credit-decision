@@ -36,7 +36,7 @@ type Thresholds struct {
 }
 
 type Scoring struct {
-	DefaultProbability float64
+	DefaultProbability *float64
 	Thresholds         Thresholds
 	Risk               Risk
 	Recommendation     Recommendation

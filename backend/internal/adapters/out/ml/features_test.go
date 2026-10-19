@@ -74,7 +74,7 @@ func TestPredict(t *testing.T) {
 			return
 		}
 		w.Header().Set("Content-Type", "application/json")
-		_, _ = w.Write([]byte(`{"credit_risk":"good","credit_risk_code":1,"probability_good":0.8,"probability_bad":0.2,"threshold":0.6}`))
+		_, _ = w.Write([]byte(`{"credit_risk":"good","credit_risk_code":1,"probability_good":0.8,"probability_bad":0.2,"decision":"approve","reasons":[],"threshold":0.6}`))
 	}))
 	defer srv.Close()
 
@@ -86,7 +86,8 @@ func TestPredict(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if p.DefaultProbability != 0.2 || p.RejectThreshold < 0.399 || p.RejectThreshold > 0.401 {
+	if p.DefaultProbability == nil || *p.DefaultProbability != 0.2 ||
+		p.Recommendation != domain.RecommendationApprove || len(p.TriggeredRules) != 0 {
 		t.Fatalf("got %+v", p)
 	}
 }

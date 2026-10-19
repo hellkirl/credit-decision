@@ -81,7 +81,7 @@ func toDetail(app domain.Application) genhttp.ApplicationDetail {
 	if sc := app.Scoring; sc != nil {
 		d.Risk = (*genhttp.Risk)(&sc.Risk)
 		d.Recommendation = (*genhttp.Recommendation)(&sc.Recommendation)
-		d.DefaultProbability = &sc.DefaultProbability
+		d.DefaultProbability = sc.DefaultProbability
 		d.Thresholds = &genhttp.Thresholds{Approve: sc.Thresholds.Approve, Reject: sc.Thresholds.Reject}
 		if sc.TriggeredRules != nil {
 			d.TriggeredRules = sc.TriggeredRules

@@ -182,8 +182,6 @@
             "type": "integer",
             "title": "Duration",
             "description": "Credit duration in months",
-            "minimum": 0.0,
-            "exclusiveMinimum": true,
             "example": 18
           },
           "credit_history": {
@@ -196,8 +194,6 @@
           },
           "purpose": {
             "type": "integer",
-            "maximum": 10.0,
-            "minimum": 0.0,
             "title": "Purpose",
             "description": "Loan purpose (0=others … 10=business)",
             "example": 2
@@ -206,8 +202,6 @@
             "type": "integer",
             "title": "Amount",
             "description": "Credit amount in DM",
-            "minimum": 0.0,
-            "exclusiveMinimum": true,
             "example": 1049
           },
           "savings": {
@@ -236,16 +230,12 @@
           },
           "personal_status_sex": {
             "type": "integer",
-            "maximum": 4.0,
-            "minimum": 1.0,
             "title": "Personal Status Sex",
             "description": "Personal status / sex",
             "example": 2
           },
           "other_debtors": {
             "type": "integer",
-            "maximum": 3.0,
-            "minimum": 1.0,
             "title": "Other Debtors",
             "description": "Other debtors / guarantors (1=none, 2=co-applicant, 3=guarantor)",
             "example": 1
@@ -268,24 +258,18 @@
           },
           "age": {
             "type": "integer",
-            "maximum": 100.0,
-            "minimum": 18.0,
             "title": "Age",
             "description": "Age in years",
             "example": 21
           },
           "other_installment_plans": {
             "type": "integer",
-            "maximum": 3.0,
-            "minimum": 1.0,
             "title": "Other Installment Plans",
             "description": "Other installment plans (1=bank, 2=stores, 3=none)",
             "example": 3
           },
           "housing": {
             "type": "integer",
-            "maximum": 3.0,
-            "minimum": 1.0,
             "title": "Housing",
             "description": "Housing (1=for free, 2=rent, 3=own)",
             "example": 1
@@ -308,24 +292,18 @@
           },
           "people_liable": {
             "type": "integer",
-            "maximum": 2.0,
-            "minimum": 1.0,
             "title": "People Liable",
             "description": "People liable to provide maintenance (1=3 or more, 2=0 to 2)",
             "example": 2
           },
           "telephone": {
             "type": "integer",
-            "maximum": 2.0,
-            "minimum": 1.0,
             "title": "Telephone",
             "description": "Telephone (1=no, 2=yes under customer name)",
             "example": 1
           },
           "foreign_worker": {
             "type": "integer",
-            "maximum": 2.0,
-            "minimum": 1.0,
             "title": "Foreign Worker",
             "description": "Foreign worker (1=yes, 2=no)",
             "example": 2
@@ -481,20 +459,49 @@
             "description": "0=bad, 1=good"
           },
           "probability_good": {
-            "type": "number",
-            "maximum": 1.0,
-            "minimum": 0.0,
             "title": "Probability Good",
             "description": "Estimated P(credit_risk = good)",
-            "format": "double"
-          },
-          "probability_bad": {
             "type": "number",
             "maximum": 1.0,
             "minimum": 0.0,
+            "format": "double",
+            "nullable": true
+          },
+          "probability_bad": {
             "title": "Probability Bad",
             "description": "Estimated P(credit_risk = bad)",
-            "format": "double"
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "format": "double",
+            "nullable": true
+          },
+          "decision": {
+            "type": "string",
+            "enum": [
+              "approve",
+              "manual_review",
+              "reject"
+            ],
+            "title": "Decision"
+          },
+          "pd": {
+            "title": "Pd",
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "format": "double",
+            "nullable": true
+          },
+          "reasons": {
+            "items": {
+              "additionalProperties": {
+                "type": "string"
+              },
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Reasons"
           },
           "threshold": {
             "type": "number",
@@ -511,6 +518,7 @@
           "credit_risk_code",
           "probability_good",
           "probability_bad",
+          "decision",
           "threshold"
         ],
         "title": "PredictionResponse"

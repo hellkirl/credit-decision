@@ -73,37 +73,15 @@ func TestNormalizeBorrower(t *testing.T) {
 
 func TestScore(t *testing.T) {
 	th := Thresholds{Approve: 0.25, Reject: 0.5}
-	tests := []struct {
-		name     string
-		p        float64
-		mutate   func(*Applicant)
-		risk     Risk
-		rec      Recommendation
-		numRules int
-	}{
-		{"low", 0.1, nil, RiskLow, RecommendationApprove, 0},
-		{"medium", 0.3, nil, RiskMedium, RecommendationReview, 0},
-		{"high", 0.7, nil, RiskHigh, RecommendationReject, 0},
-		{"short employment forces review", 0.1, func(a *Applicant) { a.EmploymentMonths = ptr(8) }, RiskLow, RecommendationReview, 1},
-		{"ordinary rules do not soften a reject", 0.7, func(a *Applicant) { a.CreditHistory = ptr(CreditHistoryDelayed) }, RiskHigh, RecommendationReject, 1},
-		{"age 25 softens reject to review", 0.7, func(a *Applicant) { a.Age = ptr(25) }, RiskHigh, RecommendationReview, 1},
-		{"age 26 does not soften reject", 0.7, func(a *Applicant) { a.Age = ptr(26) }, RiskHigh, RecommendationReject, 0},
-		{"unemployed is one rule, not two", 0.1, func(a *Applicant) {
-			a.Job = ptr(JobUnemployed)
-			a.EmploymentMonths = ptr(0)
-		}, RiskLow, RecommendationReview, 1},
+	pd := 0.7
+	s := ScoreFromML(&pd, RecommendationApprove, []string{"MODEL_RULE"}, th)
+	if s.Risk != RiskHigh || s.Recommendation != RecommendationApprove || len(s.TriggeredRules) != 1 {
+		t.Fatalf("got %s/%s rules=%v", s.Risk, s.Recommendation, s.TriggeredRules)
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			a := completeApplicant()
-			if tt.mutate != nil {
-				tt.mutate(&a)
-			}
-			s := Score(a, tt.p, th)
-			if s.Risk != tt.risk || s.Recommendation != tt.rec || len(s.TriggeredRules) != tt.numRules {
-				t.Fatalf("got %s/%s rules=%v", s.Risk, s.Recommendation, s.TriggeredRules)
-			}
-		})
+
+	manual := ScoreFromML(nil, RecommendationApprove, nil, th)
+	if manual.Risk != RiskMedium || manual.Recommendation != RecommendationReview {
+		t.Fatalf("nil PD must force manual review: %+v", manual)
 	}
 }
 

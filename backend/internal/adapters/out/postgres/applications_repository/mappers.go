@@ -38,7 +38,7 @@ func toDTO(app *domain.Application) ApplicationDTO {
 		TriggeredRules: []string{},
 	}
 	if s := app.Scoring; s != nil {
-		d.DefaultProbability = &s.DefaultProbability
+		d.DefaultProbability = s.DefaultProbability
 		d.ApproveThreshold = &s.Thresholds.Approve
 		d.RejectThreshold = &s.Thresholds.Reject
 		d.Risk = (*string)(&s.Risk)
@@ -87,10 +87,10 @@ func toDomain(d ApplicationDTO) *domain.Application {
 			ExistingCredits:       d.ExistingCredits,
 		},
 	}
-	if d.DefaultProbability != nil && d.ApproveThreshold != nil && d.RejectThreshold != nil &&
+	if d.ApproveThreshold != nil && d.RejectThreshold != nil &&
 		d.Risk != nil && d.Recommendation != nil {
 		app.Scoring = &domain.Scoring{
-			DefaultProbability: *d.DefaultProbability,
+			DefaultProbability: d.DefaultProbability,
 			Thresholds:         domain.Thresholds{Approve: *d.ApproveThreshold, Reject: *d.RejectThreshold},
 			Risk:               domain.Risk(*d.Risk),
 			Recommendation:     domain.Recommendation(*d.Recommendation),
