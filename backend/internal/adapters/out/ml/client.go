@@ -39,6 +39,9 @@ func (c *Client) Predict(ctx context.Context, a domain.Applicant) (commands.Pred
 	}
 
 	recommendation := domain.Recommendation(resp.JSON200.Decision)
+	if recommendation == "manual_review" {
+		recommendation = domain.RecommendationReview
+	}
 	if !recommendation.Valid() {
 		return commands.Prediction{}, fmt.Errorf("ml predict: unsupported decision %q", recommendation)
 	}

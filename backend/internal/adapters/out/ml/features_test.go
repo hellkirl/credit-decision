@@ -68,6 +68,7 @@ func TestPredict(t *testing.T) {
 			http.NotFound(w, r)
 			return
 		}
+
 		var f genml.CreditApplication
 		if err := json.NewDecoder(r.Body).Decode(&f); err != nil || f.Amount != 4500 {
 			http.Error(w, "bad body", http.StatusUnprocessableEntity)
@@ -88,6 +89,27 @@ func TestPredict(t *testing.T) {
 	}
 	if p.DefaultProbability == nil || *p.DefaultProbability != 0.2 ||
 		p.Recommendation != domain.RecommendationApprove || len(p.TriggeredRules) != 0 {
+		t.Fatalf("got %+v", p)
+	}
+}
+
+func TestPredictMapsManualReviewDecision(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"credit_risk":"bad","credit_risk_code":0,"probability_good":null,"probability_bad":null,"decision":"manual_review","reasons":[{"code":"UNSEEN_CATEGORY","field":"purpose"}],"threshold":0.6}`))
+	}))
+	defer srv.Close()
+
+	c, err := NewClient(srv.URL, time.Second, 100)
+	if err != nil {
+		t.Fatal(err)
+	}
+	p, err := c.Predict(context.Background(), applicant())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if p.Recommendation != domain.RecommendationReview || p.DefaultProbability != nil ||
+		len(p.TriggeredRules) != 1 || p.TriggeredRules[0] != "UNSEEN_CATEGORY: purpose" {
 		t.Fatalf("got %+v", p)
 	}
 }
