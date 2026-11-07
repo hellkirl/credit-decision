@@ -89,7 +89,9 @@ func Errors(log zerolog.Logger) gin.HandlerFunc {
 func NewRouter(server *Server, tokens TokenParser, log zerolog.Logger) *gin.Engine {
 	gin.SetMode(gin.ReleaseMode)
 	r := gin.New()
-	r.Use(gin.Recovery(), Errors(log))
+	metricsMiddleware, metricsHandler := newHTTPMetrics()
+	r.Use(metricsMiddleware, gin.Recovery(), Errors(log))
+	r.GET("/metrics", gin.WrapH(metricsHandler))
 	r.NoRoute(func(c *gin.Context) {
 		c.JSON(http.StatusNotFound, genhttp.Error{Error: "not found"})
 	})
