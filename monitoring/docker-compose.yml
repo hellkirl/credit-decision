@@ -8,6 +8,7 @@ services:
     volumes:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
       - prometheus-data:/prometheus
+      - ./prometheus/alerts.yml:/etc/prometheus/alerts.yml
     networks:
       - default
       - backend-network
@@ -24,6 +25,22 @@ services:
       - prometheus
     networks:
       - default
+
+  decision-monitor:
+    build: ./decision-monitor
+    container_name: credit-decision-monitor
+    restart: unless-stopped
+    expose:
+      - "9108"
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-credit}:${POSTGRES_PASSWORD:-credit}@db:5432/${POSTGRES_DB:-credit}?sslmode=disable
+      RUB_PER_DM: ${RUB_PER_DM:-49.1}
+      MONITOR_WINDOW: ${MONITOR_WINDOW:-30d}
+      MONITOR_INTERVAL_SECONDS: ${MONITOR_INTERVAL_SECONDS:-60}
+      MONITOR_MIN_GROUP_SIZE: "30"
+    networks:
+      - default
+      - backend-network
 
 networks:
   default: {}

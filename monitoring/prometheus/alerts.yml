@@ -1,0 +1,54 @@
+# Сигналы мониторинга решения. Что делать при каждом — decision-monitor/METRICS.md,
+# раздел «Сигналы и действия». Пороги стартовые: пересмотреть после месяца эксплуатации.
+groups:
+  - name: credit-decision
+    rules:
+      - alert: CreditPdDriftWarning
+        expr: credit_feature_psi{feature="pd"} > 0.1
+        for: 2m
+        labels: {severity: warning}
+        annotations:
+          summary: "Распределение PD сдвинулось (PSI {{ $value | printf \"%.2f\" }})"
+          description: "Поток заявок отличается от обучающей выборки. Разобрать, какие признаки сдвинулись."
+
+      - alert: CreditPdDriftCritical
+        expr: credit_feature_psi{feature="pd"} > 0.25
+        for: 2m
+        labels: {severity: critical}
+        annotations:
+          summary: "Сильный сдвиг PD (PSI {{ $value | printf \"%.2f\" }})"
+          description: "Модель работает на данных, которых не видела при обучении. Разбор в течение дня, рассмотреть откат правил."
+
+      - alert: CreditFeatureDrift
+        expr: credit_feature_psi{feature!="pd"} > 0.25
+        for: 2m
+        labels: {severity: warning}
+        annotations:
+          summary: "Сильный сдвиг признака {{ $labels.feature }} (PSI {{ $value | printf \"%.2f\" }})"
+          description: "Проверить: изменился поток клиентов или сломалась передача поля из интерфейса."
+
+      - alert: CreditCalibrationGap
+        expr: |
+          abs(credit_calibration_pd_mean{group_type="all"} - credit_calibration_default_rate{group_type="all"}) > 0.05
+          and credit_outcomes_labeled{group_type="all"} >= 200
+        for: 5m
+        labels: {severity: warning}
+        annotations:
+          summary: "Средний PD расходится с фактом более чем на 5 п.п."
+          description: "Калибратор устарел. Переподобрать параметры a и b на свежих исходах."
+
+      - alert: CreditFalseRejectGap
+        expr: credit_false_reject_gap_pp > 10
+        for: 5m
+        labels: {severity: warning}
+        annotations:
+          summary: "Ложные отказы в группе {{ $labels.group_type }}={{ $labels.group }} выше среднего на {{ $value | printf \"%.0f\" }} п.п."
+          description: "Критерий из раздела «Риски» паспорта. Разбор отказов группы, спорные — на ручную проверку."
+
+      - alert: CreditMonitorStale
+        expr: time() - credit_monitor_last_success_timestamp_seconds > 600 or absent(credit_monitor_last_success_timestamp_seconds)
+        for: 1m
+        labels: {severity: warning}
+        annotations:
+          summary: "Метрики решения не обновлялись больше 10 минут"
+          description: "decision-monitor не может прочитать журнал. Проверить контейнер и доступ к базе."

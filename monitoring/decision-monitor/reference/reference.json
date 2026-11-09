@@ -1,0 +1,366 @@
+{
+  "built_at": "2026-11-08T15:53:03+00:00",
+  "source": "ml/data/processed/south_german_credit.csv, обучающая выборка 800 (train_test, random_state=42)",
+  "model_sha256": "d4b4361fd3f9",
+  "calibrator_sha256": "217506e3aa57",
+  "n": 800,
+  "train_default_rate": 0.3,
+  "train_pd_mean": 0.30007176193372304,
+  "pd": {
+    "type": "numeric",
+    "edges": [
+      0.06771825547329059,
+      0.10703297895282349,
+      0.1473345882767126,
+      0.19445851107827755,
+      0.24333428814933944,
+      0.31481713379539855,
+      0.39794823087197184,
+      0.5026311913115155,
+      0.6045591321289746
+    ],
+    "expected": [
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1
+    ]
+  },
+  "features": {
+    "duration": {
+      "type": "numeric",
+      "edges": [
+        9.0,
+        12.0,
+        15.0,
+        18.0,
+        24.0,
+        30.0,
+        36.0
+      ],
+      "expected": [
+        0.1425,
+        0.21125,
+        0.07625,
+        0.1125,
+        0.235,
+        0.05625,
+        0.07625,
+        0.09
+      ]
+    },
+    "amount": {
+      "type": "numeric",
+      "edges": [
+        914.4000000000001,
+        1244.8,
+        1454.4,
+        1868.8000000000002,
+        2281.5,
+        2792.400000000001,
+        3496.9,
+        4629.800000000001,
+        7063.200000000002
+      ],
+      "expected": [
+        0.1,
+        0.1,
+        0.1,
+        0.1,
+        0.1,
+        0.1,
+        0.1,
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    "age": {
+      "type": "numeric",
+      "edges": [
+        23.0,
+        26.0,
+        28.0,
+        30.0,
+        33.0,
+        36.0,
+        40.0,
+        45.0,
+        53.0
+      ],
+      "expected": [
+        0.11,
+        0.1275,
+        0.0975,
+        0.0725,
+        0.10125,
+        0.12,
+        0.09625,
+        0.08375,
+        0.09875,
+        0.0925
+      ]
+    },
+    "status": {
+      "type": "categorical",
+      "categories": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "expected": [
+        0.28375,
+        0.26375,
+        0.06125,
+        0.39125
+      ]
+    },
+    "credit_history": {
+      "type": "categorical",
+      "categories": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "expected": [
+        0.03625,
+        0.0525,
+        0.53625,
+        0.09,
+        0.285
+      ]
+    },
+    "savings": {
+      "type": "categorical",
+      "categories": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "expected": [
+        0.6075,
+        0.1025,
+        0.06125,
+        0.04875,
+        0.18
+      ]
+    },
+    "employment_duration": {
+      "type": "categorical",
+      "categories": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "expected": [
+        0.06625,
+        0.16875,
+        0.33625,
+        0.17625,
+        0.2525
+      ]
+    },
+    "installment_rate": {
+      "type": "categorical",
+      "categories": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "expected": [
+        0.13625,
+        0.235,
+        0.1575,
+        0.47125
+      ]
+    },
+    "present_residence": {
+      "type": "categorical",
+      "categories": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "expected": [
+        0.1325,
+        0.29375,
+        0.14875,
+        0.425
+      ]
+    },
+    "property": {
+      "type": "categorical",
+      "categories": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "expected": [
+        0.28375,
+        0.2325,
+        0.3275,
+        0.15625
+      ]
+    },
+    "number_credits": {
+      "type": "categorical",
+      "categories": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "expected": [
+        0.64,
+        0.3275,
+        0.0275,
+        0.005
+      ]
+    },
+    "job": {
+      "type": "categorical",
+      "categories": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "expected": [
+        0.025,
+        0.2,
+        0.62875,
+        0.14625
+      ]
+    },
+    "purpose": {
+      "type": "categorical",
+      "categories": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        8,
+        9,
+        10
+      ],
+      "expected": [
+        0.2325,
+        0.1125,
+        0.1775,
+        0.2725,
+        0.01375,
+        0.02375,
+        0.05,
+        0.01125,
+        0.095,
+        0.01125
+      ]
+    },
+    "personal_status_sex": {
+      "type": "categorical",
+      "categories": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "expected": [
+        0.04625,
+        0.31,
+        0.5525,
+        0.09125
+      ]
+    },
+    "other_debtors": {
+      "type": "categorical",
+      "categories": [
+        1,
+        2,
+        3
+      ],
+      "expected": [
+        0.89875,
+        0.045,
+        0.05625
+      ]
+    },
+    "other_installment_plans": {
+      "type": "categorical",
+      "categories": [
+        1,
+        2,
+        3
+      ],
+      "expected": [
+        0.1375,
+        0.05,
+        0.8125
+      ]
+    },
+    "housing": {
+      "type": "categorical",
+      "categories": [
+        1,
+        2,
+        3
+      ],
+      "expected": [
+        0.175,
+        0.71125,
+        0.11375
+      ]
+    },
+    "people_liable": {
+      "type": "categorical",
+      "categories": [
+        1,
+        2
+      ],
+      "expected": [
+        0.1575,
+        0.8425
+      ]
+    },
+    "telephone": {
+      "type": "categorical",
+      "categories": [
+        1,
+        2
+      ],
+      "expected": [
+        0.60625,
+        0.39375
+      ]
+    },
+    "foreign_worker": {
+      "type": "categorical",
+      "categories": [
+        1,
+        2
+      ],
+      "expected": [
+        0.04,
+        0.96
+      ]
+    }
+  }
+}
