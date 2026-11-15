@@ -7,7 +7,8 @@
   1. Без исходов — видны сразу после решения: сколько заявок, доли зон,
      средний PD, дрейф признаков (PSI), срабатывания правил.
   2. С исходами — когда стало известно, вернул ли клиент кредит: калибровка
-     (средний PD против фактической доли дефолтов) и ложные отказы по группам.
+     (средний PD против фактической доли дефолтов) и ложные отказы по группам —
+     по итоговой рекомендации и по зоне модели (до правил, Этап 5).
 """
 from __future__ import annotations
 
@@ -135,6 +136,8 @@ def compute_snapshot(
 
     # ---- Слой 2: с исходами --------------------------------------------
     rates: dict[tuple[str, str], float] = {}
+    model_rates: dict[tuple[str, str], float] = {}
+    risk = journal["risk"] if "risk" in journal else None  # low / medium / high = зона модели
     for gtype, gname, mask in groups(journal):
         g = {"group_type": gtype, "group": gname}
         m = mask & labeled
@@ -151,11 +154,20 @@ def compute_snapshot(
             rate = (rec[good] == "reject").mean()  # …а система рекомендовала отказ
             snap.add("credit_false_reject_rate", g, rate)
             rates[(gtype, gname)] = rate
+            # То же на уровне модели — ДО бизнес-правил. Правило YOUNG_APPLICANT_REVIEW
+            # переводит отказ молодым в ручную проверку, и итоговая метрика у них всегда 0:
+            # проблема модели прячется. Зона модели = risk, который backend записал по PD.
+            if risk is not None:
+                mrate = (risk[good] == "high").mean()
+                snap.add("credit_false_reject_model_rate", g, mrate)
+                model_rates[(gtype, gname)] = mrate
 
-    overall = rates.get(("all", "all"))
-    if overall is not None:
-        for (gtype, gname), rate in rates.items():
+    for metric, values in (("credit_false_reject_gap_pp", rates),
+                           ("credit_false_reject_model_gap_pp", model_rates)):
+        overall = values.get(("all", "all"))
+        if overall is None:
+            continue
+        for (gtype, gname), rate in values.items():
             if gtype != "all":
-                snap.add("credit_false_reject_gap_pp",
-                         {"group_type": gtype, "group": gname}, (rate - overall) * 100)
+                snap.add(metric, {"group_type": gtype, "group": gname}, (rate - overall) * 100)
     return snap

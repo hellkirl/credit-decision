@@ -111,3 +111,35 @@ def test_unscored_applications_counted_but_excluded_from_pd():
     assert snap.get("credit_pd_mean", group="all") == pytest.approx(0.3)
     assert snap.get("credit_rule_triggered_share", rule="NUMERIC_OUT_OF_RANGE") == pytest.approx(10 / 60)
     assert snap.get("credit_feature_psi", feature="pd") is not None   # 50 оценённых — хватает
+
+
+def test_young_rule_does_not_hide_model_false_rejects():
+    """Этап 5: молодым модель ставит high, правило переводит отказ в review.
+    Итоговые ложные отказы у них 0, но метрика по зоне модели должна это показать."""
+    n = 40
+    journal = pd.DataFrame({
+        "age": [22] * n + [40] * n,
+        "marital_status": ["single"] * (2 * n),
+        "foreign_worker": [False] * (2 * n),
+        "default_probability": [0.4] * 20 + [0.2] * 20 + [0.4] * 4 + [0.2] * 36,
+        "risk": ["high"] * 20 + ["medium"] * 20 + ["high"] * 4 + ["medium"] * 36,
+        # молодым правило заменило reject на review
+        "recommendation": ["review"] * n + ["reject"] * 4 + ["review"] * 36,
+        "triggered_rules": [["YOUNG_APPLICANT_REVIEW: age"]] * 20 + [[] for _ in range(20 + n)],
+        "defaulted": [0.0] * (2 * n),
+    })
+    codes = pd.DataFrame({f: [1] * (2 * n) for f in REFERENCE["features"]})
+    snap = compute_snapshot(journal, codes, REFERENCE)
+    # по итоговой рекомендации молодые выглядят «лучше среднего»
+    assert snap.get("credit_false_reject_rate", group="<=25") == 0
+    assert snap.get("credit_false_reject_gap_pp", group="<=25") == pytest.approx(-5.0)
+    # по зоне модели разрыв виден: 50% против 30% в среднем
+    assert snap.get("credit_false_reject_model_rate", group="<=25") == pytest.approx(0.5)
+    assert snap.get("credit_false_reject_model_rate", group="all") == pytest.approx(0.3)
+    assert snap.get("credit_false_reject_model_gap_pp", group="<=25") == pytest.approx(20.0)
+
+
+def test_model_false_reject_skipped_without_risk_column():
+    journal = _journal_from_demo(DEMO.head(60))
+    snap = compute_snapshot(journal, journal_to_codes(journal, RUB_PER_DM), REFERENCE)
+    assert "credit_false_reject_model_rate" not in snap.samples

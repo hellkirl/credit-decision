@@ -45,6 +45,14 @@ groups:
           summary: "Ложные отказы в группе {{ $labels.group_type }}={{ $labels.group }} выше среднего на {{ $value | printf \"%.0f\" }} п.п."
           description: "Критерий из раздела «Риски» паспорта. Разбор отказов группы, спорные — на ручную проверку."
 
+      - alert: CreditFalseRejectModelGap
+        expr: credit_false_reject_model_gap_pp > 10
+        for: 5m
+        labels: {severity: warning}
+        annotations:
+          summary: "Модель отправляет в отказ хороших клиентов группы {{ $labels.group_type }}={{ $labels.group }} чаще среднего на {{ $value | printf \"%.0f\" }} п.п."
+          description: "Ложные отказы по зоне модели, до правил. Срабатывает и там, где правило (YOUNG_APPLICANT_REVIEW) уже перевело отказы в ручную проверку: проблема модели, а не решения. Смотреть вместе с долей ручной проверки группы."
+
       - alert: CreditMonitorStale
         expr: time() - credit_monitor_last_success_timestamp_seconds > 600 or absent(credit_monitor_last_success_timestamp_seconds)
         for: 1m

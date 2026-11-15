@@ -50,6 +50,10 @@ METRIC_SPECS: dict[str, tuple[str, list[str]]] = {
         "Доля рекомендаций reject среди клиентов без дефолта, 0..1", GROUP),
     "credit_false_reject_gap_pp": (
         "Ложные отказы группы минус общий уровень, п.п.", GROUP),
+    "credit_false_reject_model_rate": (
+        "Ложные отказы по зоне модели до правил (risk=high среди клиентов без дефолта), 0..1", GROUP),
+    "credit_false_reject_model_gap_pp": (
+        "Ложные отказы модели в группе минус общий уровень, п.п.", GROUP),
 }
 
 

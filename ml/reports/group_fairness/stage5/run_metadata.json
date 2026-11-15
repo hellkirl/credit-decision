@@ -1,0 +1,38 @@
+{
+  "sklearn": "1.9.1",
+  "pandas": "3.0.5",
+  "numpy": "2.5.3",
+  "seed": 42,
+  "n_boot": 2000,
+  "thresholds": {
+    "approve_lt": 0.083,
+    "reject_gt": 0.285
+  },
+  "young_rule_age_le": 25,
+  "min_group_n": 30,
+  "artifacts_vs_retrain_max_abs_pd_diff": 0.0005184984150380378,
+  "check_vs_ml_api": {
+    "n_variants": 1979,
+    "max_abs_pd_diff_vs_api": 3.3306690738754696e-16,
+    "recommendation_mismatches_vs_api": 0
+  },
+  "interface_and_flip": {
+    "n_code4": 92,
+    "mean_pd_code4": 0.2648040172674478,
+    "mean_pd_as_code2": 0.2878199625720314,
+    "mean_delta_pp": 2.301594530458364,
+    "max_abs_delta_pp": 3.2280787257358226,
+    "recommendation_changed": 6,
+    "fact_default_rate_code4": 0.2717391304347826,
+    "fact_default_rate_code2": 0.35161290322580646,
+    "foreign_flip_mean_delta_pp_for_foreigners": 15.078223475511617,
+    "foreign_flip_mean_delta_pp_for_locals": -16.878643631266534
+  },
+  "young_rule": {
+    "n_young": 190,
+    "triggered": 114,
+    "triggered_good": 54,
+    "triggered_bad": 60,
+    "per_1000_applications": 114.0
+  }
+}
