@@ -1,0 +1,16 @@
+metric,rank,feature,value
+mean_abs_delta_pd,1,foreign_worker,0.17741746626332186
+mean_abs_delta_pd,2,status,0.1396658085638669
+mean_abs_delta_pd,3,credit_history,0.103380108630857
+mean_abs_delta_pd,4,savings,0.07705525674297692
+mean_abs_delta_pd,5,installment_rate,0.07328189763527031
+recommendation_change_share,1,foreign_worker,0.5333333333333333
+recommendation_change_share,2,status,0.3111111111111111
+recommendation_change_share,3,credit_history,0.3
+recommendation_change_share,4,personal_status_sex,0.2222222222222222
+recommendation_change_share,5,telephone,0.2
+pd_zone_change_share,1,foreign_worker,0.5666666666666667
+pd_zone_change_share,2,status,0.3333333333333333
+pd_zone_change_share,3,credit_history,0.3333333333333333
+pd_zone_change_share,4,personal_status_sex,0.26666666666666666
+pd_zone_change_share,5,other_installment_plans,0.23333333333333334

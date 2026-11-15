@@ -1,0 +1,242 @@
+{
+  "run_id": "stage5-first-run",
+  "started_at": "2026-11-15T12:02:07.537788+00:00",
+  "completed_at": "2026-11-15T12:02:12.539057+00:00",
+  "config": {
+    "seed": 42,
+    "n_baselines": 30,
+    "batch_size": 100,
+    "timeout_seconds": 30,
+    "numeric_relative_changes": [
+      -0.2,
+      -0.1,
+      0.1,
+      0.2
+    ],
+    "age_values": [
+      24,
+      25,
+      26,
+      27
+    ],
+    "cases_per_transition": 3
+  },
+  "ml_url": "http://127.0.0.1:5001",
+  "endpoint": "/predict/batch",
+  "thresholds": {
+    "approve": 0.083,
+    "reject": 0.285
+  },
+  "dataset": "/app/data/processed/south_german_credit.csv",
+  "split_random_state": 42,
+  "test_size": 0.2,
+  "train_count": 800,
+  "test_count": 200,
+  "baseline_count": 30,
+  "variant_count": 1979,
+  "baseline_ids": [
+    "test-292",
+    "test-503",
+    "test-952",
+    "test-287",
+    "test-709",
+    "test-17",
+    "test-831",
+    "test-383",
+    "test-121",
+    "test-404",
+    "test-492",
+    "test-411",
+    "test-754",
+    "test-887",
+    "test-313",
+    "test-48",
+    "test-36",
+    "test-284",
+    "test-99",
+    "test-560",
+    "test-830",
+    "test-834",
+    "test-120",
+    "test-229",
+    "test-279",
+    "test-55",
+    "test-740",
+    "test-419",
+    "test-4",
+    "test-689"
+  ],
+  "baseline_zone_counts": {
+    "approve": 2,
+    "review": 17,
+    "reject": 11
+  },
+  "selection": "two round-robin passes over zones, thresholds, ages 25/26, random; seeded random fill",
+  "excluded_test_applications": [
+    {
+      "base_id": "test-976",
+      "pd": null,
+      "recommendation": "review",
+      "reasons": [
+        {
+          "code": "NUMERIC_OUT_OF_RANGE",
+          "field": "amount"
+        }
+      ],
+      "scoring_status": "null_pd",
+      "http_status": 200,
+      "error": ""
+    },
+    {
+      "base_id": "test-719",
+      "pd": null,
+      "recommendation": "review",
+      "reasons": [
+        {
+          "code": "NUMERIC_OUT_OF_RANGE",
+          "field": "duration"
+        }
+      ],
+      "scoring_status": "null_pd",
+      "http_status": 200,
+      "error": ""
+    }
+  ],
+  "category_values": {
+    "status": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "credit_history": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "savings": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "employment_duration": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "installment_rate": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "present_residence": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "property": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "number_credits": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "job": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "purpose": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      8,
+      9,
+      10
+    ],
+    "personal_status_sex": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "other_debtors": [
+      1,
+      2,
+      3
+    ],
+    "other_installment_plans": [
+      1,
+      2,
+      3
+    ],
+    "housing": [
+      1,
+      2,
+      3
+    ],
+    "people_liable": [
+      1,
+      2
+    ],
+    "telephone": [
+      1,
+      2
+    ],
+    "foreign_worker": [
+      1,
+      2
+    ]
+  },
+  "numeric_ranges": {
+    "duration": {
+      "min": 4,
+      "max": 60
+    },
+    "amount": {
+      "min": 250,
+      "max": 15945
+    },
+    "age": {
+      "min": 19,
+      "max": 75
+    }
+  },
+  "local_artifact_sha256": {
+    "logistic_regression.joblib": "d4b4361fd3f91a80ae332a82b93b1ccc17574b039726d6fb35305d8a6fd480e1",
+    "platt_calibrator.joblib": "217506e3aa575646a3dcfef6112ddb43c2b3904975be9fecb9a641e4d50bc6a3",
+    "training_metadata.json": "d240e300781c1471783be726c11553eff6c365cc58cff61016729c9f8143ec3e",
+    "south_german_credit.csv": "47a7f98038771671a11eddc1c3f41d700fd348231228f26f0244cb134bb20176"
+  },
+  "artifact_note": "Hashes describe local artifacts; API does not expose model identity. Use the same deployment/artifacts.",
+  "summary_denominators": {
+    "mean_abs_delta_pd": "mean of per-baseline means over valid PD pairs",
+    "pd_zone_change_share": "valid PD pairs",
+    "recommendation_change_share": "successful recommendation pairs, including null PD",
+    "baselines_with_any_recommendation_change_share": "baselines with at least one successful recommendation pair per feature"
+  },
+  "rounding": "nearest integer, half up; clip to training range; deduplicate identical variants",
+  "pd_zone_changes": 335,
+  "recommendation_changes": 302,
+  "scoring_status_counts": {
+    "ok": 1979
+  }
+}

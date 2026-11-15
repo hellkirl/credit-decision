@@ -1,0 +1,9 @@
+{
+  "seed": 42,
+  "n_baselines": 30,
+  "batch_size": 100,
+  "timeout_seconds": 30,
+  "numeric_relative_changes": [-0.2, -0.1, 0.1, 0.2],
+  "age_values": [24, 25, 26, 27],
+  "cases_per_transition": 3
+}

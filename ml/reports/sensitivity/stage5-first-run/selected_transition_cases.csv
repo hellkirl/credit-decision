@@ -1,0 +1,6 @@
+case_type,base_id,variant_id,feature,base_value,variant_value,base_pd,variant_pd,delta_pd,base_pd_zone,variant_pd_zone,base_recommendation,variant_recommendation,variant_reasons
+approve->review,test-121,test-121:status:1,status,4,1,0.065198432992068,0.2034791707986057,0.1382807378065377,approve,review,approve,review,[]
+review->reject,test-709,test-709:status:1,status,4,1,0.2844451567789267,0.5928335087198986,0.3083883519409719,review,reject,review,reject,[]
+reject->review,test-284,test-284:status:4,status,1,4,0.542426672346591,0.244513119567988,-0.29791355277860304,reject,review,reject,review,[]
+review->approve,test-4,test-4:status:4,status,1,4,0.2295669295161226,0.07523191976197412,-0.1543350097541485,review,approve,review,approve,[]
+business_rule,test-887,test-887:status:4,status,1,4,0.7151661687362183,0.4067058173307214,-0.3084603514054969,reject,reject,review,review,"[{""code"": ""YOUNG_APPLICANT_REVIEW"", ""field"": ""age""}]"
